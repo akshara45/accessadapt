@@ -3,8 +3,7 @@ import { useEffect, useState } from 'react';
 import { Brand } from '../../components/Brand';
 import { Toggle } from '../../components/Toggle';
 import { PROFILE_OPTIONS } from '../../features/profiles/profileData';
-import { createProfileSettings } from '../../features/profiles/profileUtils';
-import { getAccessibilityState, saveAccessibilityState } from '../../services/storageService';
+import { getAccessibilityState, saveAccessibilityState, selectAccessibilityProfile } from '../../services/storageService';
 import '../../styles/global.css';
 import './settings.css';
 
@@ -14,8 +13,9 @@ function Settings() {
   useEffect(() => { getAccessibilityState().then(setState); }, []);
   if (!state) return <main className="settings-page"><p>Loading settings…</p></main>;
 
-  function changeProfile(profileId) {
-    setState((current) => ({ ...current, selectedProfile: profileId, userSettings: createProfileSettings(profileId) }));
+  async function changeProfile(profileId) {
+    const nextState = await selectAccessibilityProfile(profileId);
+    setState(nextState);
   }
   function changeSetting(key, value) {
     setState((current) => ({ ...current, userSettings: { ...current.userSettings, [key]: value } }));
