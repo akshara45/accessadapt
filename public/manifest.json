@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "AccessAdapt",
+  "version": "0.1.0",
+  "description": "Personalize web accessibility settings for a more comfortable browsing experience.",
+  "action": {
+    "default_title": "AccessAdapt",
+    "default_popup": "popup.html"
+  },
+  "options_page": "settings.html",
+  "permissions": ["storage"],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content-script.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

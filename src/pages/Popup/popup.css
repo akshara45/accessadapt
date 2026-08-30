@@ -1,0 +1,8 @@
+.popup-shell { width: 340px; padding: 22px; background: #f8fafc; color: #172033; }
+.intro { margin: 18px 0; color: #58657b; font-size: 0.9rem; line-height: 1.45; }
+.control-card, .profile-summary { border: 1px solid #dce3ee; border-radius: 14px; background: #fff; }
+.control-card { padding: 14px 15px; }
+.profile-summary { margin: 12px 0 18px; padding: 15px; }
+.profile-summary strong { display: block; margin-top: 5px; font-size: 1rem; }
+.profile-summary p { margin: 5px 0 0; color: #637087; font-size: .82rem; line-height: 1.4; }
+.day-note { margin: 14px 0 0; color: #79859a; text-align: center; font-size: .72rem; }
