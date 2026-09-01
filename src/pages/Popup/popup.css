@@ -6,3 +6,36 @@
 .profile-summary strong { display: block; margin-top: 5px; font-size: 1rem; }
 .profile-summary p { margin: 5px 0 0; color: #637087; font-size: .82rem; line-height: 1.4; }
 .day-note { margin: 14px 0 0; color: #79859a; text-align: center; font-size: .72rem; }
+.scan-result {
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid #d9e1ef;
+}
+
+.issue-list {
+  margin-top: 10px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.issue-item {
+  padding: 9px 0;
+  border-top: 1px solid #e5e7eb;
+}
+
+.issue-item strong {
+  display: block;
+  font-size: 13px;
+}
+
+.issue-item p {
+  margin: 4px 0;
+  font-size: 12px;
+}
+
+.issue-item small {
+  font-size: 11px;
+  opacity: 0.7;
+}

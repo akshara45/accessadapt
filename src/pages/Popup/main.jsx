@@ -109,22 +109,42 @@ function Popup() {
       >
         Settings
       </button>
+{scanResult && (
+  <section className="scan-result">
+    {scanResult.error ? (
+      <p>{scanResult.error}</p>
+    ) : (
+      <>
+        <strong>Scan complete</strong>
 
-      {scanResult && (
-        <section className="scan-result">
-          {scanResult.error ? (
-            <p>{scanResult.error}</p>
-          ) : (
-            <>
-              <strong>Scan complete</strong>
-              <p>
-                Found {scanResult.issues} accessibility issue
-                {scanResult.issues !== 1 ? 's' : ''}.
-              </p>
-            </>
-          )}
-        </section>
-      )}
+        <p>
+          Found {scanResult.issues} accessibility issue
+          {scanResult.issues !== 1 ? 's' : ''}.
+        </p>
+
+        {scanResult.issues > 0 && (
+          <div className="issue-list">
+            {scanResult.details.map((issue, index) => (
+              <div className="issue-item" key={index}>
+                <strong>⚠ {issue.type}</strong>
+
+                <p>{issue.message}</p>
+
+                <small>
+                  Element: {issue.element}
+                </small>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {scanResult.issues === 0 && (
+          <p>✓ No accessibility issues detected.</p>
+        )}
+      </>
+    )}
+  </section>
+)}
 
       <p className="day-note">
         Accessibility scanner · First version
