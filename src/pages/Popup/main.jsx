@@ -3,14 +3,22 @@ import { useEffect, useState } from 'react';
 import { Brand } from '../../components/Brand';
 import { Toggle } from '../../components/Toggle';
 import { getProfile } from '../../features/profiles/profileData';
-import { getAccessibilityState, saveAccessibilityState } from '../../services/storageService';
+import {
+  getAccessibilityState,
+  saveAccessibilityState
+} from '../../services/storageService';
+
 import '../../styles/global.css';
 import './popup.css';
 
 function Popup() {
   const [state, setState] = useState(null);
+  const [scanning, setScanning] = useState(false);
+  const [scanResult, setScanResult] = useState(null);
 
-  useEffect(() => { getAccessibilityState().then(setState); }, []);
+  useEffect(() => {
+    getAccessibilityState().then(setState);
+  }, []);
 
   async function updateEnabled(enabled) {
     const next = { ...state, enabled };
@@ -18,24 +26,109 @@ function Popup() {
     await saveAccessibilityState(next);
   }
 
-  if (!state) return <main className="popup-shell"><p>Loading AccessAdapt…</p></main>;
+  async function scanPage() {
+    setScanning(true);
+    setScanResult(null);
+
+    try {
+      const tabs = await chrome.tabs.query({
+        active: true,
+        currentWindow: true
+      });
+
+      const tab = tabs[0];
+
+      if (!tab?.id) {
+        throw new Error('No active tab found');
+      }
+
+      const result = await chrome.tabs.sendMessage(tab.id, {
+        type: 'SCAN_PAGE'
+      });
+
+      setScanResult(result);
+    } catch (error) {
+      console.error(error);
+      setScanResult({
+        error: 'Unable to scan this page.'
+      });
+    }
+
+    setScanning(false);
+  }
+
+  if (!state) {
+    return (
+      <main className="popup-shell">
+        <p>Loading AccessAdapt…</p>
+      </main>
+    );
+  }
+
   const profile = getProfile(state.selectedProfile);
 
   return (
     <main className="popup-shell">
       <Brand />
-      <p className="intro">Make websites more comfortable to read and use, your way.</p>
-      <section className="control-card" aria-label="Accessibility controls">
-        <Toggle checked={state.enabled} onChange={updateEnabled} label="Accessibility support" />
+
+      <p className="intro">
+        Make websites more comfortable to read and use, your way.
+      </p>
+
+      <section
+        className="control-card"
+        aria-label="Accessibility controls"
+      >
+        <Toggle
+          checked={state.enabled}
+          onChange={updateEnabled}
+          label="Accessibility support"
+        />
       </section>
+
       <section className="profile-summary">
         <span className="eyebrow">CURRENT PROFILE</span>
         <strong>{profile.name}</strong>
         <p>{profile.description}</p>
       </section>
-      <button className="button button-primary" type="button">Scan this page <span aria-hidden="true">→</span></button>
-      <button className="button button-secondary" type="button" onClick={() => chrome.runtime.openOptionsPage()}>Settings</button>
-      <p className="day-note">Day 1 foundation · Page scanning arrives soon.</p>
+
+      <button
+        className="button button-primary"
+        type="button"
+        onClick={scanPage}
+        disabled={scanning}
+      >
+        {scanning ? 'Scanning…' : 'Scan this page'}
+        {!scanning && <span aria-hidden="true"> →</span>}
+      </button>
+
+      <button
+        className="button button-secondary"
+        type="button"
+        onClick={() => chrome.runtime.openOptionsPage()}
+      >
+        Settings
+      </button>
+
+      {scanResult && (
+        <section className="scan-result">
+          {scanResult.error ? (
+            <p>{scanResult.error}</p>
+          ) : (
+            <>
+              <strong>Scan complete</strong>
+              <p>
+                Found {scanResult.issues} accessibility issue
+                {scanResult.issues !== 1 ? 's' : ''}.
+              </p>
+            </>
+          )}
+        </section>
+      )}
+
+      <p className="day-note">
+        Accessibility scanner · First version
+      </p>
     </main>
   );
 }
