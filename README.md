@@ -109,14 +109,6 @@ The extension files are created in `dist/`.
 3. Enable **Developer mode**.
 4. Select **Load unpacked** and choose this project's `dist` folder.
 
-## Day 1 progress
-
-- Configured a React + Vite Manifest V3 extension foundation.
-- Added a popup and settings page with reusable accessibility profiles.
-- Added local Chrome Storage persistence for profile, enable state, and preferences.
-- Added a content-script entry point ready for future webpage adaptation.
-- Built the production extension successfully.
-- Intentionally deferred onboarding, page scanning, personalized recommendations, adaptations, AI suggestions, captions, and advanced transformations.
 
 ## Future scope
 
