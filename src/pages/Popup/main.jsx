@@ -1,12 +1,16 @@
 import { createRoot } from 'react-dom/client';
 import { useEffect, useState } from 'react';
+
 import { Brand } from '../../components/Brand';
 import { Toggle } from '../../components/Toggle';
 import { getProfile } from '../../features/profiles/profileData';
+
 import {
   getAccessibilityState,
   saveAccessibilityState
 } from '../../services/storageService';
+
+import { generateSuggestions } from '../../features/scanner/suggestionEngine';
 
 import '../../styles/global.css';
 import './popup.css';
@@ -15,13 +19,18 @@ function Popup() {
   const [state, setState] = useState(null);
   const [scanning, setScanning] = useState(false);
   const [scanResult, setScanResult] = useState(null);
+  const [suggestions, setSuggestions] = useState([]);
 
   useEffect(() => {
     getAccessibilityState().then(setState);
   }, []);
 
   async function updateEnabled(enabled) {
-    const next = { ...state, enabled };
+    const next = {
+      ...state,
+      enabled
+    };
+
     setState(next);
     await saveAccessibilityState(next);
   }
@@ -29,6 +38,7 @@ function Popup() {
   async function scanPage() {
     setScanning(true);
     setScanResult(null);
+    setSuggestions([]);
 
     try {
       const tabs = await chrome.tabs.query({
@@ -47,8 +57,18 @@ function Popup() {
       });
 
       setScanResult(result);
+
+      if (result && result.details) {
+        const newSuggestions = generateSuggestions(
+          result.details,
+          state.selectedProfile
+        );
+
+        setSuggestions(newSuggestions);
+      }
     } catch (error) {
       console.error(error);
+
       setScanResult({
         error: 'Unable to scan this page.'
       });
@@ -69,6 +89,7 @@ function Popup() {
 
   return (
     <main className="popup-shell">
+
       <Brand />
 
       <p className="intro">
@@ -87,9 +108,17 @@ function Popup() {
       </section>
 
       <section className="profile-summary">
-        <span className="eyebrow">CURRENT PROFILE</span>
-        <strong>{profile.name}</strong>
-        <p>{profile.description}</p>
+        <span className="eyebrow">
+          CURRENT PROFILE
+        </span>
+
+        <strong>
+          {profile.name}
+        </strong>
+
+        <p>
+          {profile.description}
+        </p>
       </section>
 
       <button
@@ -99,7 +128,12 @@ function Popup() {
         disabled={scanning}
       >
         {scanning ? 'Scanning…' : 'Scan this page'}
-        {!scanning && <span aria-hidden="true"> →</span>}
+
+        {!scanning && (
+          <span aria-hidden="true">
+            {' '}→
+          </span>
+        )}
       </button>
 
       <button
@@ -109,48 +143,104 @@ function Popup() {
       >
         Settings
       </button>
-{scanResult && (
-  <section className="scan-result">
-    {scanResult.error ? (
-      <p>{scanResult.error}</p>
-    ) : (
-      <>
-        <strong>Scan complete</strong>
 
-        <p>
-          Found {scanResult.issues} accessibility issue
-          {scanResult.issues !== 1 ? 's' : ''}.
-        </p>
+      {/* SCAN RESULTS */}
 
-        {scanResult.issues > 0 && (
-          <div className="issue-list">
-            {scanResult.details.map((issue, index) => (
-              <div className="issue-item" key={index}>
-                <strong>⚠ {issue.type}</strong>
+      {scanResult && (
+        <section className="scan-result">
 
-                <p>{issue.message}</p>
+          {scanResult.error ? (
+            <p>
+              {scanResult.error}
+            </p>
+          ) : (
+            <>
+              <strong>
+                Scan complete
+              </strong>
 
-                <small>
-                  Element: {issue.element}
-                </small>
+              <p>
+                Found {scanResult.issues} accessibility issue
+                {scanResult.issues !== 1 ? 's' : ''}.
+              </p>
+
+              {scanResult.issues > 0 && (
+                <div className="issue-list">
+
+                  {scanResult.details.map(
+                    (issue, index) => (
+                      <div
+                        className="issue-item"
+                        key={index}
+                      >
+                        <strong>
+                          ⚠ {issue.type}
+                        </strong>
+
+                        <p>
+                          {issue.message}
+                        </p>
+
+                        <small>
+                          Element: {issue.element}
+                        </small>
+                      </div>
+                    )
+                  )}
+
+                </div>
+              )}
+
+              {scanResult.issues === 0 && (
+                <p>
+                  ✓ No accessibility issues detected.
+                </p>
+              )}
+            </>
+          )}
+
+        </section>
+      )}
+
+      {/* SMART SUGGESTIONS */}
+
+      {suggestions.length > 0 && (
+        <section className="suggestions">
+
+          <strong>
+            💡 Smart Suggestions
+          </strong>
+
+          {suggestions.map(
+            (suggestion, index) => (
+              <div
+                className="suggestion-item"
+                key={index}
+              >
+                <strong>
+                  {suggestion.feature}
+                </strong>
+
+                <p>
+                  {suggestion.message}
+                </p>
               </div>
-            ))}
-          </div>
-        )}
+            )
+          )}
 
-        {scanResult.issues === 0 && (
-          <p>✓ No accessibility issues detected.</p>
-        )}
-      </>
-    )}
-  </section>
-)}
+        </section>
+      )}
 
       <p className="day-note">
-        Accessibility scanner · First version
+        Accessibility scanner · Smart suggestions
       </p>
+
     </main>
   );
 }
 
-createRoot(document.getElementById('root')).render(<Popup />);
+createRoot(
+  document.getElementById('root')
+).render(
+  <Popup />
+);
