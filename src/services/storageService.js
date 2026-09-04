@@ -5,6 +5,7 @@ const DEFAULT_STATE = {
   enabled: true,
   selectedProfile: DEFAULT_PROFILE_ID,
   userSettings: createProfileSettings(DEFAULT_PROFILE_ID),
+  onboardingCompleted: false,
 };
 
 function getStorage() {
@@ -17,11 +18,12 @@ export async function getAccessibilityState() {
 
   const saved = await storage.get(DEFAULT_STATE);
   const selectedProfile = isProfileId(saved.selectedProfile) ? saved.selectedProfile : DEFAULT_PROFILE_ID;
-  return {
-    enabled: saved.enabled,
-    selectedProfile,
-    userSettings: normalizeSettings(saved.userSettings, selectedProfile),
-  };
+ return {
+  enabled: saved.enabled,
+  selectedProfile,
+  userSettings: normalizeSettings(saved.userSettings, selectedProfile),
+  onboardingCompleted: saved.onboardingCompleted ?? false,
+};
 }
 
 export async function saveAccessibilityState(state) {

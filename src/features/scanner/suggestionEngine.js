@@ -1,80 +1,103 @@
-export function generateSuggestions(issues, profileId) {
+export function generateSuggestions(details, selectedProfile) {
   const suggestions = [];
 
-  const hasIssue = (type) =>
-    issues.some((issue) => issue.type === type);
+  if (!details || details.length === 0) {
+    return suggestions;
+  }
 
-  // Low Vision
-  if (profileId === 'low-vision') {
-    if (hasIssue('Missing alt text')) {
-      suggestions.push({
-        feature: 'Text-to-Speech',
-        message:
-          'Some images do not have alternative text. Text-to-Speech can help you access page content.'
-      });
-    }
+  // Check detected accessibility issues
+  const hasMissingAltText = details.some(
+    (issue) => issue.type === 'Missing alt text'
+  );
 
+  const hasMissingAccessibleName = details.some(
+    (issue) => issue.type === 'Missing accessible name'
+  );
+
+  const hasMissingFormLabel = details.some(
+    (issue) => issue.type === 'Missing form label'
+  );
+
+  const hasMissingHeadings = details.some(
+    (issue) => issue.type === 'Missing headings'
+  );
+
+  const hasMissingPageTitle = details.some(
+    (issue) => issue.type === 'Missing page title'
+  );
+
+  // 1. Focus Highlight
+  if (hasMissingAccessibleName || hasMissingFormLabel) {
     suggestions.push({
-      feature: 'High Contrast',
+      title: 'Focus Highlight',
       message:
-        'High Contrast can improve visibility and readability for low-vision users.'
+        'Some interactive elements may be difficult to identify. Focus Highlight can make keyboard navigation clearer.',
+      setting: 'focusHighlight',
+      value: true,
     });
   }
 
-  // Dyslexia
-  if (profileId === 'dyslexia') {
-    if (hasIssue('Missing headings')) {
-      suggestions.push({
-        feature: 'Reading Assistance',
-        message:
-          'This page has no clear headings. Reading assistance can make the content easier to follow.'
-      });
-    }
-
-    suggestions.push({
-      feature: 'Reading Layout',
-      message:
-        'Increased spacing and a clearer font can make this page easier to read.'
-    });
-  }
-
-  // Reading Difficulty
-  if (profileId === 'reading-difficulty') {
-    if (hasIssue('Missing headings')) {
-      suggestions.push({
-        feature: 'Reading Assistance',
-        message:
-          'This page has no clear headings. A calmer reading layout may make the content easier to follow.'
-      });
-    }
-
-    suggestions.push({
-      feature: 'Reduced Motion',
-      message:
-        'Reduced Motion can make the page more comfortable to read.'
-    });
-  }
-
-  // Color Vision
-  if (profileId === 'color-vision') {
-    suggestions.push({
-      feature: 'High Contrast',
-      message:
-        'High Contrast can make important page elements easier to distinguish.'
-    });
-  }
-
-  // Interactive elements
+  // 2. Improve Readability
   if (
-    hasIssue('Missing form label') ||
-    hasIssue('Missing accessible name')
+    selectedProfile === 'low-vision' ||
+    hasMissingHeadings
   ) {
     suggestions.push({
-      feature: 'Focus Highlight',
+      title: 'Improve Readability',
       message:
-        'Some interactive elements may be difficult to identify. Focus Highlight can make keyboard navigation clearer.'
+        'Larger text and increased spacing can make this page easier to read.',
+      setting: 'fontSize',
+      value: 125,
     });
   }
 
-  return suggestions;
+  // 3. Dyslexia-Friendly Spacing
+  if (selectedProfile === 'dyslexia') {
+    suggestions.push({
+      title: 'Dyslexia-Friendly Spacing',
+      message:
+        'Increased letter, word, and line spacing can make reading more comfortable.',
+      setting: 'letterSpacing',
+      value: 0.06,
+    });
+  }
+
+  // 4. Calmer Reading Mode
+  if (
+    selectedProfile === 'reading-difficulty' ||
+    hasMissingHeadings ||
+    hasMissingPageTitle
+  ) {
+    suggestions.push({
+      title: 'Calmer Reading Mode',
+      message:
+        'Reduced motion and increased line spacing can make the page easier to follow.',
+      setting: 'reduceMotion',
+      value: true,
+    });
+  }
+
+  // 5. High Contrast
+  if (selectedProfile === 'color-vision') {
+    suggestions.push({
+      title: 'High Contrast',
+      message:
+        'Higher contrast can make text and important information easier to distinguish.',
+      setting: 'contrast',
+      value: true,
+    });
+  }
+
+  // 6. Missing Alt Text
+  if (hasMissingAltText) {
+    suggestions.push({
+      title: 'Missing Image Descriptions',
+      message:
+        'Some images do not have alternative text. Adding alt text would improve accessibility for screen-reader users.',
+      informational: true,
+    });
+  }
+
+  // Maximum 4 suggestions
+  return suggestions.slice(0, 4);
 }
