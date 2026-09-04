@@ -21,12 +21,13 @@ The recommendation layer will compare a detected issue and its details with stor
 
 ## Key features
 
-- Personalized onboarding for first-time preference setup (planned)
-- Reusable user accessibility profile and persistent local preferences
-- Reliable, incremental accessibility scanning (planned)
-- Personalized recommendations based on both detected issues and user preferences (planned)
-- User-controlled webpage adaptations with apply, dismiss, and restore actions (planned)
-- Chrome Storage persistence for selected profile, enabled state, and reading preferences
+- Personalized onboarding for first-time preference setup
+- Reusable accessibility profiles including Standard, Low Vision, Dyslexia, Reading Difficulty, and Color Vision
+- Persistent user preferences using Chrome Storage API
+- Accessibility scanning for issues such as missing alt text, missing form labels, missing accessible names, small text, tight spacing, excessive motion, and low contrast
+- Personalized recommendations based on detected issues and user preferences
+- User-controlled accessibility settings for font size, spacing, contrast, reduced motion, and focus highlighting
+- Chrome and Edge extension support through Manifest V3
 
 ## Example use case
 
@@ -76,7 +77,7 @@ src/
 └── styles/           # Shared styles
 ```
 
-## Planned architecture
+## System architecture
 
 1. **Onboarding** collects first-launch choices such as high contrast, larger text, increased spacing, increased line height, reduced motion, and color-vision assistance.
 2. **Profiles** store those choices as reusable preference data alongside a general profile such as Standard, Low Vision, Dyslexia, Reading Difficulty, or Color Vision.
@@ -112,8 +113,9 @@ The extension files are created in `dist/`.
 
 ## Future scope
 
-- More reliable accessibility checks, added incrementally
-- More personalized adaptation and recommendation rules
-- More advanced recommendation logic, including optional AI-assisted recommendations
-- Live captions
-- Support for more browsers
+- Improve the accuracy of accessibility detection
+- Expand personalized recommendation rules
+- Add reversible apply, dismiss, and restore actions for recommendations
+- Live caption generation
+- AI-assisted accessibility recommendations
+- Support for additional browsers
