@@ -140,36 +140,39 @@ function restoreAdaptations() {
 }
 
 function applyAdaptation(adaptationType) {
-  switch (adaptationType) {
-    case "high_contrast":
-    case "low_contrast":
-      applyHighContrast();
-      break;
+switch (adaptationType) {
+  case 'enable_high_contrast':
+  case 'high_contrast':
+  case 'low_contrast':
+    applyHighContrast();
+    break;
 
-    case "large_text":
-    case "small_text":
-      applyLargeText();
-      break;
+  case 'increase_text_size':
+  case 'large_text':
+  case 'small_text':
+    applyLargeText();
+    break;
 
-    case "improve_spacing":
-    case "tight_spacing":
-      applySpacing();
-      break;
+  case 'increase_reading_spacing':
+  case 'improve_spacing':
+  case 'tight_spacing':
+    applySpacing();
+    break;
 
-    case "reduce_motion":
-    case "excessive_motion":
-      applyReduceMotion();
-      break;
+  case 'reduce_motion':
+  case 'excessive_motion':
+    applyReduceMotion();
+    break;
 
-    case "restore":
-      restoreAdaptations();
-      break;
+  case 'restore':
+    restoreAdaptations();
+    break;
 
-    default:
-      console.warn(
-        "AccessAdapt: Unknown adaptation type:",
-        adaptationType
-      );
+  default:
+    console.warn(
+      'AccessAdapt: Unknown adaptation type:',
+      adaptationType
+    );
   }
 }
 
