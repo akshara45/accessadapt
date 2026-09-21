@@ -1,3 +1,7 @@
+import {
+  applyAdaptation,
+  restoreAdaptations,
+} from '../adaptation/webpageAdapter.js';
 const STYLE_ID = 'accessadapt-styles';
 
 // -------------------------
@@ -438,7 +442,22 @@ chrome.runtime.onMessage.addListener(
     if (message.type === 'SCAN_PAGE') {
       sendResponse(scanPage());
     }
+if (message.type === 'APPLY_ADAPTATION') {
+  applyAdaptation(message.adaptationType);
 
+  sendResponse({
+    success: true,
+    adaptation: message.adaptationType,
+  });
+}
+    if (message.type === 'RESTORE_ADAPTATIONS') {
+  restoreAdaptations();
+
+  sendResponse({
+    success: true,
+    restored: true,
+  });
+}
     return true;
   }
 );
