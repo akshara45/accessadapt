@@ -4,7 +4,7 @@
 const STYLE_ID = "accessadapt-adaptation-styles";
 
 function getStyleElement() {
-  let style = document.getElementById(STYLE_ID);
+  let style = document.getElementById(STYLE_ID); 
 
   if (!style) {
     style = document.createElement("style");
