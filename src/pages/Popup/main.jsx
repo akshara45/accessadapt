@@ -236,6 +236,25 @@ function Popup() {
               <strong>{suggestion.title}</strong>
 
               <p>{suggestion.reason}</p>
+              {!suggestion.informational && (
+  <button
+    className="button button-primary"
+    type="button"
+    onClick={() => {
+      chrome.tabs.query(
+        { active: true, currentWindow: true },
+        ([tab]) => {
+          chrome.tabs.sendMessage(tab.id, {
+            type: 'APPLY_ADAPTATION',
+            adaptationType: suggestion.id,
+          });
+        }
+      );
+    }}
+  >
+    Apply
+  </button>
+)}
             </div>
           ))}
         </section>
