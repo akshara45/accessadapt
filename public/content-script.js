@@ -1,78 +1,32 @@
-const STYLE_ID = 'accessadapt-styles';
-
-// -------------------------
-// GET ACCESSIBILITY SETTINGS
-// -------------------------
-
-async function getAccessibilityProfile() {
-  const data = await chrome.storage.local.get([
-    'enabled',
-    'selectedProfile',
-    'userSettings',
-  ]);
-
-  // Do nothing if accessibility support is disabled
-  if (!data.enabled) {
-    return null;
-  }
-
-  return data.userSettings || null;
-}
-
-
-// -------------------------
-// APPLY ACCESSIBILITY PROFILE
-// -------------------------
-
-async function applyAccessibilityProfile() {
-  const settings = await getAccessibilityProfile();
-
-  if (!settings) {
-    return;
-  }
-
-  let style = document.getElementById(STYLE_ID);
-
-  if (!style) {
-    style = document.createElement('style');
-    style.id = STYLE_ID;
-
-    if (document.head) {
-      document.head.appendChild(style);
-    } else {
-      document.documentElement.appendChild(style);
-    }
-  }
-
-  style.textContent = `
+var e=new Set([`script`,`style`,`noscript`,`template`,`svg`,`path`,`symbol`,`use`]);function t(t){if(!t||t.nodeType!==Node.ELEMENT_NODE)return!1;let n=t.tagName.toLowerCase();if(e.has(n)||t.hasAttribute(`hidden`))return!1;if(typeof t.checkVisibility==`function`)try{if(!t.checkVisibility({checkOpacity:!0,checkVisibilityCSS:!0}))return!1}catch{}if(typeof window<`u`)try{let e=window.getComputedStyle(t);if(e.display===`none`||e.visibility===`hidden`||e.visibility===`collapse`||parseFloat(e.opacity)===0)return!1;let n=t.getBoundingClientRect();if(n.width===0&&n.height===0)return!1}catch{return!1}return!0}function n(e){if(!e)return!1;let t=e.getAttribute(`role`);return t===`presentation`||t===`none`||e.getAttribute(`aria-hidden`)===`true`}function r(e){return typeof CSS<`u`&&typeof CSS.escape==`function`?CSS.escape(e):e.replace(/([^\w-])/g,`\\$1`)}function i(e){if(!e||e.nodeType!==Node.ELEMENT_NODE)return``;if(e.id&&typeof e.id==`string`&&e.id.trim()){let t=e.id.trim();try{let e=`#`+r(t);if(document.querySelectorAll(e).length===1)return e}catch{}}let t=[],n=e;for(;n&&n.nodeType===Node.ELEMENT_NODE&&n!==document.documentElement;){let e=n.tagName.toLowerCase();if(e===`body`){t.unshift(`body`);break}if(n.className&&typeof n.className==`string`){let i=n.className.trim().split(/\s+/).filter(e=>e&&!e.startsWith(`accessadapt-`));if(i.length>0){let n=`.`+r(i[0]);try{if(document.querySelectorAll(e+n).length===1){t.unshift(e+n);break}}catch{}e+=n}}if(n.parentElement){let t=Array.from(n.parentElement.children).filter(e=>e.tagName===n.tagName);if(t.length>1){let r=t.indexOf(n)+1;e+=`:nth-of-type(${r})`}}t.unshift(e),n=n.parentElement}return t.join(` > `)}function a(e,t){e&&typeof e.setAttribute==`function`&&e.setAttribute(`data-accessadapt-id`,t)}function o(e=document){let r=[],a=e.querySelectorAll(`img`),o=new Set;return a.forEach(e=>{if(!t(e)||n(e))return;let a=e.hasAttribute(`alt`),s=e.getAttribute(`alt`);if(a&&s.trim()===``)return;let c=e.getAttribute(`aria-label`),l=e.getAttribute(`aria-labelledby`);if(!(c?.trim()||l?.trim())&&!a){let t=i(e);if(o.has(t))return;o.add(t),r.push({type:`MISSING_ALT`,severity:`high`,selector:t,element:`img`,message:`Image is missing alternative text`,details:{src:e.getAttribute(`src`)||e.currentSrc||null,hasAlt:!1,altValue:null},domElement:e})}}),r}var s=new Set([`hidden`,`submit`,`reset`,`button`,`image`]);function c(e){let t=e.getAttribute(`aria-labelledby`);if(t&&t.trim().split(/\s+/).some(e=>{let t=document.getElementById(e);return t&&t.textContent.trim().length>0}))return!0;let n=e.getAttribute(`aria-label`);if(n&&n.trim().length>0)return!0;if(e.id&&e.id.trim())try{let t=document.querySelector(`label[for="${CSS.escape(e.id.trim())}"]`);if(t&&t.textContent.trim().length>0)return!0}catch{}let r=e.closest(`label`);if(r){let e=r.cloneNode(!0);if(e.querySelectorAll(`input, textarea, select`).forEach(e=>e.remove()),e.textContent.trim().length>0)return!0}let i=e.getAttribute(`title`);return!!(i&&i.trim().length>0)}function l(e=document){let r=[],a=e.querySelectorAll(`input, textarea, select`),o=new Set;return a.forEach(e=>{let a=e.tagName.toLowerCase(),l=(e.getAttribute(`type`)||`text`).toLowerCase();if(!(a===`input`&&s.has(l))&&!(!t(e)||n(e))&&!c(e)){let t=i(e);if(o.has(t))return;o.add(t),r.push({type:`MISSING_FORM_LABEL`,severity:`high`,selector:t,element:a,message:`Form control does not have an accessible label`,details:{controlType:a,inputType:a===`input`?l:null,hasPlaceholder:!!e.getAttribute(`placeholder`),placeholderNote:e.getAttribute(`placeholder`)?`Placeholder is present but is not an accessible label`:null},domElement:e})}}),r}function u(e){let t=e.getAttribute(`aria-labelledby`);if(t&&t.trim().split(/\s+/).some(e=>{let t=document.getElementById(e);return t&&t.textContent.trim().length>0}))return!0;let n=e.getAttribute(`aria-label`);if(n&&n.trim().length>0)return!0;if(e.tagName.toLowerCase()===`input`){let t=e.getAttribute(`value`);if(t&&t.trim().length>0)return!0}if((e.innerText||e.textContent||``).trim().length>0)return!0;let r=e.querySelectorAll(`img`);for(let e of r){let t=e.getAttribute(`alt`);if(t&&t.trim().length>0)return!0;let n=e.getAttribute(`aria-label`);if(n&&n.trim().length>0)return!0}let i=e.querySelectorAll(`svg`);for(let e of i){let t=e.querySelector(`title`);if(t&&t.textContent.trim().length>0)return!0;let n=e.getAttribute(`aria-label`);if(n&&n.trim().length>0)return!0}let a=e.getAttribute(`title`);return!!(a&&a.trim().length>0)}function d(e=document){let r=[],a=e.querySelectorAll(`button, [role="button"], input[type="button"], input[type="submit"], input[type="reset"]`),o=new Set;return a.forEach(e=>{if(!(!t(e)||n(e))&&!u(e)){let t=i(e);if(o.has(t))return;o.add(t),r.push({type:`BUTTON_NO_NAME`,severity:`high`,selector:t,element:e.tagName.toLowerCase(),message:`Button does not have an accessible name`,details:{tagName:e.tagName.toLowerCase(),role:e.getAttribute(`role`)||`button`,childIconCount:e.querySelectorAll(`svg, i, span`).length},domElement:e})}}),r}function f(e=document,r={}){let a=r.threshold??12,o=[],s=e.querySelectorAll(`p, span, li, a, button, label, h1, h2, h3, h4, h5, h6, td, th, caption, blockquote, figcaption, small, dt, dd`),c=new Set,l=new Set;return s.forEach(e=>{if(!t(e)||n(e))return;let r=e.textContent.trim();if(!r)return;let s=e.parentElement,u=!1;for(;s&&s!==document.body;){if(c.has(s)){u=!0;break}s=s.parentElement}if(u)return;let d=0;try{let t=window.getComputedStyle(e);d=parseFloat(t.fontSize)||0}catch{return}if(d>0&&d<a){let t=i(e);if(l.has(t))return;l.add(t),c.add(e),o.push({type:`SMALL_TEXT`,severity:`medium`,selector:t,element:e.tagName.toLowerCase(),message:`Text may be difficult to read (${d}px is below ${a}px threshold)`,details:{fontSize:`${d}px`,threshold:`${a}px`,textSnippet:r.length>50?r.slice(0,47)+`...`:r},domElement:e})}}),o}var p={transparent:{r:0,g:0,b:0,a:0},black:{r:0,g:0,b:0,a:1},white:{r:255,g:255,b:255,a:1},red:{r:255,g:0,b:0,a:1},green:{r:0,g:128,b:0,a:1},blue:{r:0,g:0,b:255,a:1},yellow:{r:255,g:255,b:0,a:1},cyan:{r:0,g:255,b:255,a:1},magenta:{r:255,g:0,b:255,a:1},gray:{r:128,g:128,b:128,a:1},grey:{r:128,g:128,b:128,a:1},lightgray:{r:211,g:211,b:211,a:1},lightgrey:{r:211,g:211,b:211,a:1},darkgray:{r:169,g:169,b:169,a:1},darkgrey:{r:169,g:169,b:169,a:1}};function m(e){if(!e||typeof e!=`string`)return null;let t=e.trim().toLowerCase();if(p[t])return{...p[t]};if(t.startsWith(`#`)){let e=t.slice(1);if(e.length===3)return{r:parseInt(e[0]+e[0],16),g:parseInt(e[1]+e[1],16),b:parseInt(e[2]+e[2],16),a:1};if(e.length===4)return{r:parseInt(e[0]+e[0],16),g:parseInt(e[1]+e[1],16),b:parseInt(e[2]+e[2],16),a:Math.round(parseInt(e[3]+e[3],16)/255*1e3)/1e3};if(e.length===6)return{r:parseInt(e.slice(0,2),16),g:parseInt(e.slice(2,4),16),b:parseInt(e.slice(4,6),16),a:1};if(e.length===8)return{r:parseInt(e.slice(0,2),16),g:parseInt(e.slice(2,4),16),b:parseInt(e.slice(4,6),16),a:Math.round(parseInt(e.slice(6,8),16)/255*1e3)/1e3}}let n=t.match(/^rgba?\(\s*([\d.]+)\s*(?:,|\s)\s*([\d.]+)\s*(?:,|\s)\s*([\d.]+)(?:\s*(?:,|\/)\s*([\d.]+%?))?\s*\)$/);if(n){let e=parseFloat(n[1]),t=parseFloat(n[2]),r=parseFloat(n[3]),i=1;return n[4]!==void 0&&(i=n[4].endsWith(`%`)?parseFloat(n[4])/100:parseFloat(n[4])),{r:Math.min(255,Math.max(0,Math.round(e))),g:Math.min(255,Math.max(0,Math.round(t))),b:Math.min(255,Math.max(0,Math.round(r))),a:Math.min(1,Math.max(0,i))}}return null}function h(e){let t=e/255;return t<=.03928?t/12.92:((t+.055)/1.055)**2.4}function g(e,t,n){let r=h(e),i=h(t),a=h(n);return .2126*r+.7152*i+.0722*a}function _(e,t){if(typeof e!=`number`||typeof t!=`number`)return null;let n=Math.max(e,t),r=Math.min(e,t),i=(n+.05)/(r+.05);return Math.round(i*100)/100}function v(e,t){let n=e.a===void 0?1:e.a;return n>=1?{r:e.r,g:e.g,b:e.b,a:1}:n<=0?{r:t.r,g:t.g,b:t.b,a:1}:{r:Math.round(n*e.r+(1-n)*t.r),g:Math.round(n*e.g+(1-n)*t.g),b:Math.round(n*e.b+(1-n)*t.b),a:1}}function y(e){let t={r:255,g:255,b:255,a:1};if(!e||typeof window>`u`)return t;let n=[],r=e;for(;r&&r!==document.documentElement;){try{let e=m(window.getComputedStyle(r).backgroundColor);if(e&&e.a>0&&(n.push(e),e.a===1))break}catch{break}r=r.parentElement}if(document.documentElement)try{let e=m(window.getComputedStyle(document.documentElement).backgroundColor);e&&e.a>0&&n.push(e)}catch{}let i={...t};for(let e=n.length-1;e>=0;e--)i=v(n[e],i);return i}function b(e,t){return e>=24||e>=18.66&&(t===`bold`||t===`bolder`||parseInt(t,10)>=700)}function x(e=document){let r=[],a=e.querySelectorAll(`p, span, li, a, button, label, h1, h2, h3, h4, h5, h6, dt, dd, th, td, caption, blockquote`),o=new Set,s=new Set;return a.forEach(e=>{if(!t(e)||n(e))return;let a=e.textContent.trim();if(!a)return;let c=e.parentElement,l=!1;for(;c&&c!==document.body;){if(s.has(c)){l=!0;break}c=c.parentElement}if(!l)try{let t=window.getComputedStyle(e),n=m(t.color);if(!n)return;let c=y(e),l=v(n,c),u=_(g(l.r,l.g,l.b),g(c.r,c.g,c.b));if(u===null)return;let d=parseFloat(t.fontSize)||16,f=t.fontWeight||`400`,p=b(d,f),h=p?3:4.5;if(u<h){let t=i(e);if(o.has(t))return;o.add(t),s.add(e);let n=`rgb(${l.r}, ${l.g}, ${l.b})`,m=`rgb(${c.r}, ${c.g}, ${c.b})`;r.push({type:`LOW_CONTRAST`,severity:`high`,selector:t,element:e.tagName.toLowerCase(),message:`Text has insufficient color contrast (${u}:1, minimum ${h}:1 required)`,details:{contrastRatio:u,requiredRatio:h,textColor:n,backgroundColor:m,fontSize:`${d}px`,fontWeight:f,isLargeText:p,textSnippet:a.length>50?a.slice(0,47)+`...`:a},domElement:e})}}catch{}}),r}function S(e=document){let r=[],a=new Set;e.querySelectorAll(`marquee`).forEach(e=>{let t=i(e);a.has(t)||(a.add(t),r.push({type:`MOTION_DETECTED`,severity:`high`,selector:t,element:`marquee`,message:`Marquee element detected which causes continuous scrolling motion`,details:{mediaType:`marquee`},domElement:e}))}),e.querySelectorAll(`video`).forEach(e=>{if(!(!t(e)||n(e))&&(e.hasAttribute(`autoplay`)||!e.paused)){let t=i(e);a.has(t)||(a.add(t),r.push({type:`MOTION_DETECTED`,severity:`medium`,selector:t,element:`video`,message:`Autoplay video detected which may distract or trigger motion sensitivity`,details:{mediaType:`video`,autoplay:!0,hasControls:e.hasAttribute(`controls`)},domElement:e}))}}),e.querySelectorAll(`img[src*=".gif" i]`).forEach(e=>{if(!t(e)||n(e))return;let o=i(e);a.has(o)||(a.add(o),r.push({type:`MOTION_DETECTED`,severity:`low`,selector:o,element:`img`,message:`Animated GIF detected; animated graphics cannot easily be paused by the user`,details:{mediaType:`gif`,src:e.getAttribute(`src`)},domElement:e}))});let o=e.querySelectorAll(`*`),s=0;for(let e of o){if(s>=5)break;if(!(!t(e)||n(e))&&!(e.id?.startsWith(`accessadapt-`)||e.className?.toString().includes(`accessadapt-`)))try{let t=window.getComputedStyle(e),n=t.animationName,o=t.animationDuration,c=t.animationIterationCount,l=n&&n!==`none`&&o!==`0s`,u=c===`infinite`;if(l&&(u||(parseFloat(o)||0)>=5)){let t=i(e);a.has(t)||(a.add(t),s++,r.push({type:`MOTION_DETECTED`,severity:u?`medium`:`low`,selector:t,element:e.tagName.toLowerCase(),message:`CSS animation detected (${n}, ${c} iterations) that may cause motion sensitivity`,details:{animationName:n,animationDuration:o,animationIterationCount:c},domElement:e}))}}catch{}}return r}var C=`accessadapt-highlight-styles`,w=`accessadapt-detected-issue`;function T(){if(typeof document>`u`)return;let e=document.getElementById(C);e||(e=document.createElement(`style`),e.id=C,e.textContent=`
+      .${w} {
+        outline: 3px solid #e53e3e !important;
+        outline-offset: 2px !important;
+        box-shadow: 0 0 8px rgba(229, 62, 62, 0.6) !important;
+      }
+    `,(document.head||document.documentElement).appendChild(e))}function E(e=[]){typeof document>`u`||(T(),Array.isArray(e)&&e.length>0?e.forEach(e=>{let t=e.element;!t&&e.id&&(t=document.querySelector(`[data-accessadapt-id="${CSS.escape(e.id)}"]`)),t&&t.classList&&t.classList.add(w)}):document.querySelectorAll(`[data-accessadapt-id]`).forEach(e=>{e.classList.add(w)}))}function D(){if(typeof document>`u`)return;document.querySelectorAll(`.${w}`).forEach(e=>{e.classList.remove(w)});let e=document.getElementById(C);e&&e.remove()}function O(){return typeof document>`u`?!1:document.querySelectorAll(`.${w}`).length>0}var k=[];function A(e={}){if(typeof document>`u`)return{timestamp:Date.now(),url:``,issueCount:0,issues:[],details:[]};let t=e.root||document,n=o(t),r=l(t),i=d(t),s=f(t,{threshold:e.smallTextThreshold}),c=x(t),u=S(t),p=[...n,...r,...i,...s,...c,...u],m=[];return k=[],p.forEach((e,t)=>{let n=`accessadapt-issue-${String(t+1).padStart(3,`0`)}`;e.domElement&&a(e.domElement,n),k.push({id:n,domElement:e.domElement}),m.push({id:n,type:e.type,severity:e.severity,selector:e.selector,element:e.element,message:e.message,details:e.details||{}})}),{timestamp:Date.now(),url:typeof window<`u`?window.location.href:``,issueCount:m.length,issues:m,details:m}}function j(){return E(),{success:!0,highlighted:!0}}function M(){return D(),{success:!0,highlighted:!1}}function N(){return{active:O()}}var P=`accessadapt-styles`;async function F(){let e=await chrome.storage.local.get([`enabled`,`selectedProfile`,`userSettings`]);return e.enabled&&e.userSettings||null}async function I(){let e=await F();if(!e)return;let t=document.getElementById(P);t||(t=document.createElement(`style`),t.id=P,document.head?document.head.appendChild(t):document.documentElement.appendChild(t)),t.textContent=`
     /* Font size */
     body {
-      font-size: ${settings.fontSize}% !important;
+      font-size: ${e.fontSize}% !important;
     }
 
     /* Reading preferences */
     body {
-      font-family: ${settings.fontFamily} !important;
-      letter-spacing: ${settings.letterSpacing}em !important;
-      word-spacing: ${settings.wordSpacing}em !important;
-      line-height: ${settings.lineHeight} !important;
+      font-family: ${e.fontFamily} !important;
+      letter-spacing: ${e.letterSpacing}em !important;
+      word-spacing: ${e.wordSpacing}em !important;
+      line-height: ${e.lineHeight} !important;
     }
 
     /* Contrast enhancement */
-    ${
-      settings.contrast
-        ? `
+    ${e.contrast?`
           body {
             filter: contrast(1.15) !important;
           }
-        `
-        : ''
-    }
+        `:``}
 
     /* Reduce animations */
-    ${
-      settings.reduceMotion
-        ? `
+    ${e.reduceMotion?`
           *,
           *::before,
           *::after {
@@ -81,150 +35,13 @@ async function applyAccessibilityProfile() {
             transition-duration: 0.01ms !important;
             scroll-behavior: auto !important;
           }
-        `
-        : ''
-    }
+        `:``}
 
     /* Focus highlight */
-    ${
-      settings.focusHighlight
-        ? `
+    ${e.focusHighlight?`
           *:focus {
             outline: 3px solid #315cba !important;
             outline-offset: 3px !important;
           }
-        `
-        : ''
-    }
-  `;
-}
-
-
-// -------------------------
-// ACCESSIBILITY SCANNER
-// -------------------------
-
-function scanPage() {
-  const issues = [];
-
-  // Missing alt text
-  document.querySelectorAll('img').forEach((img) => {
-    if (!img.hasAttribute('alt')) {
-      issues.push({
-        type: 'Missing alt text',
-        element: 'Image',
-        message: 'Image does not have alt text.',
-      });
-    }
-  });
-
-  // Missing page title
-  if (!document.title.trim()) {
-    issues.push({
-      type: 'Missing page title',
-      element: 'Page',
-      message: 'The page does not have a title.',
-    });
-  }
-
-  // Missing headings
-  if (
-    document.querySelectorAll(
-      'h1, h2, h3, h4, h5, h6'
-    ).length === 0
-  ) {
-    issues.push({
-      type: 'Missing headings',
-      element: 'Page',
-      message: 'No headings were found on this page.',
-    });
-  }
-
-  // Missing form labels
-  document
-    .querySelectorAll(
-      'input:not([type="hidden"]), textarea, select'
-    )
-    .forEach((element) => {
-      const id = element.getAttribute('id');
-
-      const label =
-        id && document.querySelector(`label[for="${id}"]`);
-
-      const ariaLabel =
-        element.getAttribute('aria-label') ||
-        element.getAttribute('aria-labelledby');
-
-      if (!label && !ariaLabel) {
-        issues.push({
-          type: 'Missing form label',
-          element: element.tagName.toLowerCase(),
-          message:
-            'Form control does not have an accessible label.',
-        });
-      }
-    });
-
-  // Missing accessible names
-  document
-    .querySelectorAll('a, button')
-    .forEach((element) => {
-      const text = element.textContent.trim();
-
-      const ariaLabel =
-        element.getAttribute('aria-label') ||
-        element.getAttribute('aria-labelledby');
-
-      const title = element.getAttribute('title');
-
-      if (!text && !ariaLabel && !title) {
-        issues.push({
-          type: 'Missing accessible name',
-          element: element.tagName.toLowerCase(),
-          message:
-            'Interactive element has no accessible name.',
-        });
-      }
-    });
-
-  return {
-    issues: issues.length,
-    details: issues,
-  };
-}
-
-
-// -------------------------
-// MESSAGE FROM POPUP
-// -------------------------
-
-chrome.runtime.onMessage.addListener(
-  (message, sender, sendResponse) => {
-    if (message.type === 'SCAN_PAGE') {
-      sendResponse(scanPage());
-    }
-
-    return true;
-  }
-);
-
-
-// -------------------------
-// INITIALIZE
-// -------------------------
-
-function initializeContentScript() {
-  if (
-    document.documentElement.dataset
-      .accessadaptContentScript
-  ) {
-    return;
-  }
-
-  document.documentElement.dataset.accessadaptContentScript =
-    'ready';
-
-  applyAccessibilityProfile();
-}
-
-initializeContentScript();
+        `:``}
+  `}function L(e={}){return A(e)}chrome.runtime.onMessage.addListener((e,t,n)=>e.type===`SCAN_PAGE`?(n(L(e.options||{})),!0):e.type===`HIGHLIGHT_ISSUES`?(n(j()),!0):e.type===`CLEAR_HIGHLIGHTS`?(n(M()),!0):e.type===`GET_HIGHLIGHT_STATUS`?(n(N()),!0):e.type!==`APPLY_PROFILE`||(I(),n({success:!0}),!0));function R(){document.documentElement.dataset.accessadaptContentScript||(document.documentElement.dataset.accessadaptContentScript=`ready`,I())}R();
