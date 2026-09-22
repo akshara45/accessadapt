@@ -20,6 +20,7 @@ function Popup() {
   const [scanning, setScanning] = useState(false);
   const [scanResult, setScanResult] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
+  const [highlighting, setHighlighting] = useState(false);
 
   // -------------------------
   // LOAD ACCESSIBILITY STATE
@@ -97,6 +98,31 @@ function Popup() {
       });
     } finally {
       setScanning(false);
+    }
+  }
+
+  // -------------------------
+  // TOGGLE ISSUE HIGHLIGHTS
+  // -------------------------
+
+  async function toggleHighlights() {
+    try {
+      const [tab] = await chrome.tabs.query({
+        active: true,
+        currentWindow: true,
+      });
+
+      if (!tab?.id) return;
+
+      if (highlighting) {
+        await chrome.tabs.sendMessage(tab.id, { type: 'CLEAR_HIGHLIGHTS' });
+        setHighlighting(false);
+      } else {
+        await chrome.tabs.sendMessage(tab.id, { type: 'HIGHLIGHT_ISSUES' });
+        setHighlighting(true);
+      }
+    } catch (error) {
+      console.error('Highlight error:', error);
     }
   }
 
@@ -182,39 +208,68 @@ function Popup() {
             <>
               <strong>Scan complete</strong>
 
-              <p>
-                Found {scanResult.issues} accessibility issue
-                {scanResult.issues !== 1 ? 's' : ''}.
-              </p>
+              {(() => {
+                const count = typeof scanResult.issues === 'number'
+                  ? scanResult.issues
+                  : (scanResult.issueCount ?? (Array.isArray(scanResult.issues) ? scanResult.issues.length : 0));
+                const list = Array.isArray(scanResult.issues)
+                  ? scanResult.issues
+                  : (scanResult.details ?? []);
 
-              {scanResult.issues > 0 && (
-                <div className="issue-list">
-                  {scanResult.details.map((issue, index) => (
-                    <div
-                      className="issue-item"
-                      key={`${issue.id}-${index}`}
-                    >
-                      <strong>
-                        ⚠ {issue.id.replaceAll('_', ' ')}
-                      </strong>
+                return (
+                  <>
+                    <p>
+                      Found {count} accessibility issue{count !== 1 ? 's' : ''}.
+                    </p>
 
-                      <p>{issue.message}</p>
+                    {count > 0 && (
+                      <>
+                        <button
+                          className="button button-secondary highlight-toggle-btn"
+                          type="button"
+                          onClick={toggleHighlights}
+                          style={{ marginBottom: '12px', fontSize: '0.85rem', padding: '6px 10px' }}
+                        >
+                          {highlighting ? '✕ Clear highlights' : '👁 Highlight issues on page'}
+                        </button>
 
-                      <small>
-                        Severity: {issue.severity}
-                      </small>
+                        <div className="issue-list">
+                          {list.map((issue, index) => (
+                            <div
+                              className="issue-item"
+                              key={`${issue.id}-${index}`}
+                            >
+                              <strong>
+                                ⚠ {(issue.type || issue.id).replaceAll('_', ' ')}
+                              </strong>
 
-                      <small>
-                        Element: {issue.element}
-                      </small>
-                    </div>
-                  ))}
-                </div>
-              )}
+                              <p>{issue.message}</p>
 
-              {scanResult.issues === 0 && (
-                <p>✓ No accessibility issues detected.</p>
-              )}
+                              <small>
+                                Severity: {issue.severity}
+                              </small>
+
+                              <small>
+                                Element: {issue.element || issue.selector}
+                              </small>
+
+                              {issue.selector && issue.selector !== issue.element && (
+                                <small style={{ opacity: 0.8, wordBreak: 'break-all' }}>
+                                  Selector: {issue.selector}
+                                </small>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    )}
+
+                    {count === 0 && (
+                      <p>✓ No accessibility issues detected.</p>
+                    )}
+                  </>
+                );
+              })()}
             </>
           )}
         </section>

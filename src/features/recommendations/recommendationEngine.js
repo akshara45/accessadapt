@@ -9,8 +9,25 @@ function getPriority(severity) {
   return priorities[severity] ?? 50;
 }
 
-function findIssue(issues, issueId) {
-  return issues.find((issue) => issue.id === issueId);
+const TYPE_MAPPING = {
+  low_contrast: ['low_contrast', 'LOW_CONTRAST'],
+  small_text: ['small_text', 'SMALL_TEXT'],
+  tight_spacing: ['tight_spacing', 'TIGHT_SPACING'],
+  excessive_motion: ['excessive_motion', 'MOTION_DETECTED'],
+  missing_accessible_name: ['missing_accessible_name', 'BUTTON_NO_NAME'],
+  missing_form_label: ['missing_form_label', 'MISSING_FORM_LABEL'],
+  missing_alt_text: ['missing_alt_text', 'MISSING_ALT'],
+};
+
+function findIssue(issues, issueKey) {
+  const matchTypes = TYPE_MAPPING[issueKey] || [issueKey];
+  return issues.find(
+    (issue) =>
+      matchTypes.includes(issue.type) ||
+      matchTypes.includes(issue.id) ||
+      issue.id === issueKey ||
+      issue.type === issueKey
+  );
 }
 
 export function getRecommendations(issues = [], profileSettings = {}) {

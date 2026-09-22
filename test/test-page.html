@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AccessAdapt Accessibility Test Suite Page</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      margin: 32px;
+      line-height: 1.5;
+      background-color: #ffffff;
+      color: #1a202c;
+    }
+
+    h1, h2, h3 {
+      color: #2d3748;
+    }
+
+    .test-section {
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 24px;
+      background-color: #fafafa;
+    }
+
+    .test-case {
+      margin: 12px 0;
+      padding: 12px;
+      background: #ffffff;
+      border: 1px solid #edf2f7;
+      border-radius: 6px;
+    }
+
+    .test-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+
+    .badge-bad {
+      background: #fed7d7;
+      color: #c53030;
+    }
+
+    .badge-good {
+      background: #c6f6d5;
+      color: #22543d;
+    }
+
+    /* Animation for motion test */
+    @keyframes pulse-animation {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.08); opacity: 0.7; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .pulsing-box {
+      display: inline-block;
+      padding: 12px 20px;
+      background-color: #3182ce;
+      color: #ffffff;
+      border-radius: 6px;
+      animation: pulse-animation 2s infinite ease-in-out;
+    }
+
+    /* Subtle hover transition (should NOT be flagged as harmful motion) */
+    .hover-btn {
+      padding: 8px 16px;
+      background: #4a5568;
+      color: #ffffff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+    .hover-btn:hover {
+      background: #2d3748;
+    }
+
+    /* Outline styles matching extension highlight */
+    .accessadapt-detected-issue {
+      outline: 3px solid #e53e3e !important;
+      outline-offset: 2px !important;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>AccessAdapt Scanner Test Page</h1>
+    <p>This test page contains intentional positive accessibility cases (should be flagged) and negative cases (should NOT be flagged).</p>
+  </header>
+
+  <!-- Interactive Test Suite Runner Panel -->
+  <div id="test-dashboard" style="background: #edf2f7; border: 2px solid #cbd5e0; border-radius: 8px; padding: 18px; margin-bottom: 28px;">
+    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 14px;">
+      <button id="btn-run-tests" type="button" style="background: #3182ce; color: #fff; font-weight: bold; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer;">
+        ▶ Run Accessibility Scanner
+      </button>
+      <button id="btn-highlight-issues" type="button" style="background: #e53e3e; color: #fff; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer;">
+        👁 Highlight Detected Issues
+      </button>
+      <button id="btn-clear-highlights" type="button" style="background: #718096; color: #fff; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer;">
+        ✕ Clear Highlights
+      </button>
+      <span id="test-status" style="font-weight: 600; margin-left: auto;">Ready to run tests.</span>
+    </div>
+
+    <div id="test-results-container" style="display: none; background: #fff; padding: 14px; border-radius: 6px; border: 1px solid #e2e8f0;">
+      <h3 style="margin-top: 0;">Scanner Verification Report</h3>
+      <div id="test-summary" style="margin-bottom: 12px; font-weight: bold;"></div>
+      <table id="test-assertions-table" style="width: 100%; border-collapse: collapse; font-size: 14px;">
+        <thead>
+          <tr style="background: #f7fafc; text-align: left; border-bottom: 2px solid #e2e8f0;">
+            <th style="padding: 8px;">Target Element</th>
+            <th style="padding: 8px;">Expected Outcome</th>
+            <th style="padding: 8px;">Actual Result</th>
+            <th style="padding: 8px;">Status</th>
+          </tr>
+        </thead>
+        <tbody id="test-assertions-body"></tbody>
+      </table>
+
+      <h4 style="margin: 16px 0 8px 0;">All Issues Returned by Scanner:</h4>
+      <pre id="test-json-output" style="background: #1a202c; color: #edf2f7; padding: 12px; border-radius: 6px; max-height: 250px; overflow: auto; font-size: 12px;"></pre>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- 1. MISSING ALT TEXT TESTS                      -->
+  <!-- ============================================== -->
+  <section class="test-section" id="section-alt">
+    <h2>1. Images & Alternative Text</h2>
+
+    <div class="test-case">
+      <span class="test-badge badge-bad">Positive Test: Missing Alt</span>
+      <p>Image below has NO alt attribute (should be detected):</p>
+      <img id="bad-img-no-alt" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='40'%3E%3Crect width='100' height='40' fill='%23ccc'/%3E%3Ctext x='10' y='25' fill='%23333'%3ENo Alt%3C/text%3E%3C/svg%3E" width="100" height="40">
+    </div>
+
+    <div class="test-case">
+      <span class="test-badge badge-good">Negative Test: Decorative Image</span>
+      <p>Image below has <code>alt=""</code> (intentionally decorative, should NOT be detected):</p>
+      <img id="good-img-decorative" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='40'%3E%3Crect width='100' height='40' fill='%23def'/%3E%3Ctext x='10' y='25' fill='%23333'%3EDecorative%3C/text%3E%3C/svg%3E" alt="" width="100" height="40">
+    </div>
+
+    <div class="test-case">
+      <span class="test-badge badge-good">Negative Test: Valid Alt</span>
+      <p>Image below has descriptive alt text (should NOT be detected):</p>
+      <img id="good-img-with-alt" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='40'%3E%3Crect width='100' height='40' fill='%23dfd'/%3E%3Ctext x='10' y='25' fill='%23333'%3EValid Alt%3C/text%3E%3C/svg%3E" alt="AccessAdapt test illustration" width="100" height="40">
+    </div>
+
+    <div class="test-case">
+      <span class="test-badge badge-good">Negative Test: aria-hidden Image</span>
+      <p>Image below has <code>aria-hidden="true"</code> (should NOT be detected):</p>
+      <img id="good-img-aria-hidden" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='40'%3E%3Crect width='100' height='40' fill='%23eee'/%3E%3Ctext x='10' y='25' fill='%23333'%3EHidden%3C/text%3E%3C/svg%3E" aria-hidden="true" width="100" height="40">
+    </div>
+  </section>
+
+  <!-- ============================================== -->
+  <!-- 2. FORM LABELS TESTS                           -->
+  <!-- ============================================== -->
+  <section class="test-section" id="section-forms">
+    <h2>2. Form Controls & Labels</h2>
+
+    <div class="test-case">
+      <span class="test-badge badge-bad">Positive Test: Input Without Label</span>
+      <p>Input with only placeholder (should be detected):</p>
+      <input id="bad-input-unlabeled" type="text" placeholder="Enter username here...">
+    </div>
+
+    <div class="test-case">
+      <span class="test-badge badge-good">Negative Test: Explicit Label (for=id)</span>
+      <p>Input with associated label:</p>
+      <label for="good-input-explicit">Full Name</label>
+      <input id="good-input-explicit" type="text">
+    </div>
+
+    <div class="test-case">
+      <span class="test-badge badge-good">Negative Test: Wrapping Label</span>
+      <p>Input wrapped inside label:</p>
+      <label id="good-input-wrapped-label">
+        Email Address:
+        <input id="good-input-wrapped" type="email">
+      </label>
+    </div>
+
+    <div class="test-case">
+      <span class="test-badge badge-good">Negative Test: aria-label</span>
+      <p>Input with aria-label attribute:</p>
+      <input id="good-input-aria-label" type="search" aria-label="Search articles and guides">
+    </div>
+
+    <div class="test-case">
+      <span class="test-badge badge-good">Negative Test: Hidden Input</span>
+      <p>Hidden input (should NOT be detected):</p>
+      <input id="good-input-hidden" type="hidden" name="csrf" value="secret_123">
+    </div>
+  </section>
+
+  <!-- ============================================== -->
+  <!-- 3. BUTTON ACCESSIBLE NAMES TESTS               -->
+  <!-- ============================================== -->
+  <section class="test-section" id="section-buttons">
+    <h2>3. Button Accessible Names</h2>
+
+    <div class="test-case">
+      <span class="test-badge badge-bad">Positive Test: Button Without Accessible Name</span>
+      <p>Button containing only an empty span/icon without text or ARIA (should be detected):</p>
+      <button id="bad-button-no-name" type="button">
+        <span class="icon">★</span>
+      </button>
+    </div>
+
+    <div class="test-case">
+      <span class="test-badge badge-good">Negative Test: Button with Visible Text</span>
+      <p>Button with text content:</p>
+      <button id="good-button-text" type="button">Submit Feedback</button>
+    </div>
+
+    <div class="test-case">
+      <span class="test-badge badge-good">Negative Test: Button with aria-label</span>
+      <p>Icon button with aria-label:</p>
+      <button id="good-button-aria" type="button" aria-label="Close dialog window">✕</button>
+    </div>
+
+    <div class="test-case">
+      <span class="test-badge badge-good">Negative Test: Button with img alt</span>
+      <p>Button with child img having alt:</p>
+      <button id="good-button-img-alt" type="button">
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Crect width='16' height='16' fill='%23000'/%3E%3C/svg%3E" alt="Print Document" width="16" height="16">
+      </button>
+    </div>
+  </section>
+
+  <!-- ============================================== -->
+  <!-- 4. SMALL TEXT TESTS                            -->
+  <!-- ============================================== -->
+  <section class="test-section" id="section-small-text">
+    <h2>4. Text Size & Readability</h2>
+
+    <div class="test-case">
+      <span class="test-badge badge-bad">Positive Test: 10px Text</span>
+      <p id="bad-text-10px" style="font-size: 10px;">This text is styled at 10px font size, below the 12px threshold (warning should be reported).</p>
+    </div>
+
+    <div class="test-case">
+      <span class="test-badge badge-good">Negative Test: 12px Text (At Threshold)</span>
+      <p id="good-text-12px" style="font-size: 12px;">This text is 12px (meets the default minimum threshold, should NOT be reported).</p>
+    </div>
+
+    <div class="test-case">
+      <span class="test-badge badge-good">Negative Test: 16px Text</span>
+      <p id="good-text-16px" style="font-size: 16px;">This text is 16px (standard reading body size, should NOT be reported).</p>
+    </div>
+  </section>
+
+  <!-- ============================================== -->
+  <!-- 5. COLOR CONTRAST TESTS                        -->
+  <!-- ============================================== -->
+  <section class="test-section" id="section-contrast">
+    <h2>5. Color Contrast Ratio</h2>
+
+    <div class="test-case">
+      <span class="test-badge badge-bad">Positive Test: Low Contrast (Gray on White)</span>
+      <div style="background-color: #ffffff; padding: 10px;">
+        <p id="bad-contrast-gray" style="color: #b0b0b0; background-color: #ffffff; margin: 0; font-size: 15px;">
+          Low contrast text: light gray (#b0b0b0) on white (#ffffff) has contrast ratio ~ 2.0:1 (fails 4.5:1 requirement).
+        </p>
+      </div>
+    </div>
+
+    <div class="test-case">
+      <span class="test-badge badge-bad">Positive Test: Low Contrast (Dark Gray on Black)</span>
+      <div style="background-color: #111111; padding: 10px;">
+        <p id="bad-contrast-dark" style="color: #444444; background-color: #111111; margin: 0; font-size: 15px;">
+          Low contrast text: dark gray on dark background (ratio ~ 1.8:1).
+        </p>
+      </div>
+    </div>
+
+    <div class="test-case">
+      <span class="test-badge badge-good">Negative Test: High Contrast (Black on White)</span>
+      <div style="background-color: #ffffff; padding: 10px;">
+        <p id="good-contrast-black-on-white" style="color: #000000; background-color: #ffffff; margin: 0; font-size: 15px;">
+          High contrast text: black on white has contrast ratio 21:1 (passes).
+        </p>
+      </div>
+    </div>
+
+    <div class="test-case">
+      <span class="test-badge badge-good">Negative Test: High Contrast (White on Black)</span>
+      <div style="background-color: #000000; padding: 10px;">
+        <p id="good-contrast-white-on-black" style="color: #ffffff; background-color: #000000; margin: 0; font-size: 15px;">
+          High contrast text: white on black has contrast ratio 21:1 (passes).
+        </p>
+      </div>
+    </div>
+
+    <div class="test-case">
+      <span class="test-badge badge-good">Negative Test: Inherited Ancestor Background</span>
+      <div style="background-color: #ffffff; padding: 10px;">
+        <div style="background-color: transparent;">
+          <p id="good-contrast-inherited" style="color: #2b6cb0; margin: 0; font-size: 15px;">
+            Blue text (#2b6cb0) on transparent child inheriting white background (~ 5.4:1 ratio, passes).
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================== -->
+  <!-- 6. MOTION & ANIMATION TESTS                    -->
+  <!-- ============================================== -->
+  <section class="test-section" id="section-motion">
+    <h2>6. Motion & Animations</h2>
+
+    <div class="test-case">
+      <span class="test-badge badge-bad">Positive Test: Infinite CSS Animation</span>
+      <p>Element below has continuous infinite animation:</p>
+      <div id="bad-motion-pulse" class="pulsing-box">Pulsing Notice</div>
+    </div>
+
+    <div class="test-case">
+      <span class="test-badge badge-good">Negative Test: Subtle Hover Transition</span>
+      <p>Button with short hover transition (should NOT be detected):</p>
+      <button id="good-motion-hover" class="hover-btn" type="button">Hover over me</button>
+    </div>
+  </section>
+
+  <script type="module">
+    import {
+      detectAccessibility,
+      highlightDetectedIssues,
+      clearDetectedIssuesHighlights,
+    } from '../src/accessibility/detector.js';
+
+    const btnRun = document.getElementById('btn-run-tests');
+    const btnHighlight = document.getElementById('btn-highlight-issues');
+    const btnClear = document.getElementById('btn-clear-highlights');
+    const statusEl = document.getElementById('test-status');
+    const resultsContainer = document.getElementById('test-results-container');
+    const summaryEl = document.getElementById('test-summary');
+    const tbodyEl = document.getElementById('test-assertions-body');
+    const jsonOutput = document.getElementById('test-json-output');
+
+    let latestResult = null;
+
+    btnRun.addEventListener('click', () => {
+      statusEl.textContent = 'Scanning webpage DOM...';
+      const startTime = performance.now();
+      latestResult = detectAccessibility();
+      const elapsed = (performance.now() - startTime).toFixed(1);
+
+      resultsContainer.style.display = 'block';
+      statusEl.textContent = `Completed in ${elapsed}ms (${latestResult.issueCount} issues detected)`;
+      jsonOutput.textContent = JSON.stringify(latestResult, null, 2);
+
+      // Verify specific target elements
+      const assertions = [
+        // 1. Missing Alt
+        {
+          targetId: 'bad-img-no-alt',
+          expectedType: 'MISSING_ALT',
+          shouldDetect: true,
+          label: 'Image without alt (#bad-img-no-alt)',
+        },
+        {
+          targetId: 'good-img-decorative',
+          expectedType: 'MISSING_ALT',
+          shouldDetect: false,
+          label: 'Decorative image with alt="" (#good-img-decorative)',
+        },
+        {
+          targetId: 'good-img-with-alt',
+          expectedType: 'MISSING_ALT',
+          shouldDetect: false,
+          label: 'Image with valid alt (#good-img-with-alt)',
+        },
+        {
+          targetId: 'good-img-aria-hidden',
+          expectedType: 'MISSING_ALT',
+          shouldDetect: false,
+          label: 'Image with aria-hidden="true" (#good-img-aria-hidden)',
+        },
+
+        // 2. Form Labels
+        {
+          targetId: 'bad-input-unlabeled',
+          expectedType: 'MISSING_FORM_LABEL',
+          shouldDetect: true,
+          label: 'Input with only placeholder (#bad-input-unlabeled)',
+        },
+        {
+          targetId: 'good-input-explicit',
+          expectedType: 'MISSING_FORM_LABEL',
+          shouldDetect: false,
+          label: 'Input with label for=id (#good-input-explicit)',
+        },
+        {
+          targetId: 'good-input-wrapped',
+          expectedType: 'MISSING_FORM_LABEL',
+          shouldDetect: false,
+          label: 'Input wrapped in label (#good-input-wrapped)',
+        },
+        {
+          targetId: 'good-input-aria-label',
+          expectedType: 'MISSING_FORM_LABEL',
+          shouldDetect: false,
+          label: 'Input with aria-label (#good-input-aria-label)',
+        },
+        {
+          targetId: 'good-input-hidden',
+          expectedType: 'MISSING_FORM_LABEL',
+          shouldDetect: false,
+          label: 'Hidden input (#good-input-hidden)',
+        },
+
+        // 3. Button Names
+        {
+          targetId: 'bad-button-no-name',
+          expectedType: 'BUTTON_NO_NAME',
+          shouldDetect: true,
+          label: 'Button without name (#bad-button-no-name)',
+        },
+        {
+          targetId: 'good-button-text',
+          expectedType: 'BUTTON_NO_NAME',
+          shouldDetect: false,
+          label: 'Button with visible text (#good-button-text)',
+        },
+        {
+          targetId: 'good-button-aria',
+          expectedType: 'BUTTON_NO_NAME',
+          shouldDetect: false,
+          label: 'Button with aria-label (#good-button-aria)',
+        },
+        {
+          targetId: 'good-button-img-alt',
+          expectedType: 'BUTTON_NO_NAME',
+          shouldDetect: false,
+          label: 'Button with child image alt (#good-button-img-alt)',
+        },
+
+        // 4. Small Text
+        {
+          targetId: 'bad-text-10px',
+          expectedType: 'SMALL_TEXT',
+          shouldDetect: true,
+          label: '10px font size text (#bad-text-10px)',
+        },
+        {
+          targetId: 'good-text-12px',
+          expectedType: 'SMALL_TEXT',
+          shouldDetect: false,
+          label: '12px font size text (#good-text-12px)',
+        },
+        {
+          targetId: 'good-text-16px',
+          expectedType: 'SMALL_TEXT',
+          shouldDetect: false,
+          label: '16px font size text (#good-text-16px)',
+        },
+
+        // 5. Contrast
+        {
+          targetId: 'bad-contrast-gray',
+          expectedType: 'LOW_CONTRAST',
+          shouldDetect: true,
+          label: 'Low contrast gray on white (#bad-contrast-gray)',
+        },
+        {
+          targetId: 'bad-contrast-dark',
+          expectedType: 'LOW_CONTRAST',
+          shouldDetect: true,
+          label: 'Low contrast dark gray on black (#bad-contrast-dark)',
+        },
+        {
+          targetId: 'good-contrast-black-on-white',
+          expectedType: 'LOW_CONTRAST',
+          shouldDetect: false,
+          label: 'High contrast black on white (#good-contrast-black-on-white)',
+        },
+        {
+          targetId: 'good-contrast-white-on-black',
+          expectedType: 'LOW_CONTRAST',
+          shouldDetect: false,
+          label: 'High contrast white on black (#good-contrast-white-on-black)',
+        },
+
+        // 6. Motion
+        {
+          targetId: 'bad-motion-pulse',
+          expectedType: 'MOTION_DETECTED',
+          shouldDetect: true,
+          label: 'Infinite CSS pulse animation (#bad-motion-pulse)',
+        },
+        {
+          targetId: 'good-motion-hover',
+          expectedType: 'MOTION_DETECTED',
+          shouldDetect: false,
+          label: 'Hover transition button (#good-motion-hover)',
+        },
+      ];
+
+      tbodyEl.innerHTML = '';
+      let passedCount = 0;
+
+      assertions.forEach((a) => {
+        const issueFound = latestResult.issues.find((issue) => {
+          const matchesType = issue.type === a.expectedType;
+          const selectorMatches = issue.selector.includes(a.targetId);
+          return matchesType && selectorMatches;
+        });
+
+        const isDetected = Boolean(issueFound);
+        const passed = a.shouldDetect ? isDetected : !isDetected;
+        if (passed) passedCount++;
+
+        const tr = document.createElement('tr');
+        tr.style.borderBottom = '1px solid #edf2f7';
+        tr.innerHTML = `
+          <td style="padding: 6px 8px; font-weight: 500;">${a.label}</td>
+          <td style="padding: 6px 8px;">${a.shouldDetect ? 'Should detect ' + a.expectedType : 'Should NOT detect'}</td>
+          <td style="padding: 6px 8px;">${isDetected ? 'Detected (' + issueFound.severity + ')' : 'Not detected'}</td>
+          <td style="padding: 6px 8px; font-weight: bold; color: ${passed ? '#22543d' : '#c53030'};">
+            ${passed ? '✓ PASS' : '✗ FAIL'}
+          </td>
+        `;
+        tbodyEl.appendChild(tr);
+      });
+
+      const total = assertions.length;
+      summaryEl.innerHTML = `
+        <span style="color: ${passedCount === total ? '#22543d' : '#c53030'};">
+          ${passedCount} of ${total} test assertions passed.
+        </span>
+      `;
+    });
+
+    btnHighlight.addEventListener('click', () => {
+      highlightDetectedIssues();
+      statusEl.textContent = 'Visual highlights applied to detected elements.';
+    });
+
+    btnClear.addEventListener('click', () => {
+      clearDetectedIssuesHighlights();
+      statusEl.textContent = 'Highlights cleared.';
+    });
+  </script>
+</body>
+</html>
+
